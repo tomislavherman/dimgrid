@@ -201,3 +201,9 @@ console.log('best config:', best)
 `trainModel` is whatever launches a training run in your stack — a TensorFlow.js fit call, a Python subprocess, a remote job submitted to a GPU cluster. The dimgrid part is the same regardless.
 
 The pruning matters at scale: a full 4-dimensional sweep without constraints wastes GPU hours on configurations that are guaranteed to fail. Adding a fifth dimension (say, `weightDecay`) multiplies the search space, but the function form keeps the invalid slice removed automatically.
+
+---
+
+## Credits
+
+Thanks to [Santiago Arévalo](https://github.com/SantiagoMinka) for encouraging me to publish this as a library.

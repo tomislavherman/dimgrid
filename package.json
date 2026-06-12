@@ -1,0 +1,65 @@
+{
+  "name": "dimgrid",
+  "version": "0.1.0",
+  "description": "Build a typed N-dimensional grid of objects by adding named dimensions with discrete values",
+  "keywords": [
+    "grid",
+    "cartesian",
+    "dimensions",
+    "combinatorics",
+    "typescript",
+    "vitest",
+    "storybook",
+    "hyperparameters"
+  ],
+  "author": "Tomislav Herman <tomislav.herman@gmail.com> (https://github.com/tomislavherman)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomislavherman/dimgrid.git"
+  },
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.3"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "format": [
+      "esm",
+      "cjs"
+    ],
+    "dts": true,
+    "clean": true
+  },
+  "allowScripts": {
+    "esbuild@0.27.7": true
+  }
+}

@@ -12,15 +12,16 @@ export class DimGrid<T extends object = {}> {
   dim<K extends string, const V>(
     key: K,
     values: readonly V[] | ((point: T) => readonly V[]),
-  ): DimGrid<T & Record<K, V>> {
-    const next: Array<T & Record<K, V>> = []
+  ): DimGrid<{ [P in keyof T | K]: P extends K ? V : P extends keyof T ? T[P] : never }> {
+    type Next = { [P in keyof T | K]: P extends K ? V : P extends keyof T ? T[P] : never }
+    const next: Array<Next> = []
     const resolve = typeof values === 'function' ? values : () => values
     for (const point of this._points) {
       for (const value of resolve(point)) {
-        next.push({ ...point, [key]: value } as T & Record<K, V>)
+        next.push({ ...point, [key]: value } as Next)
       }
     }
-    return new DimGrid<T & Record<K, V>>(next)
+    return new DimGrid<Next>(next)
   }
 
   toArray(): T[] {

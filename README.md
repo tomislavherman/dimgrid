@@ -1,5 +1,7 @@
 # dimgrid
 
+[![npm version](https://img.shields.io/npm/v/dimgrid)](https://www.npmjs.com/package/dimgrid)
+
 Build a typed N-dimensional grid of objects by adding named dimensions with discrete values.
 
 Start from a single empty point and expand it into a full cartesian product by adding dimensions one at a time. Each `.dim()` call multiplies every existing point by the number of values in the new dimension, attaching the dimension key to each resulting point.

@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "agent",
+            "if": "Bash(npm version*)",
+            "prompt": "The npm version command just bumped the package version. Do the following:\n1. Read package.json to get the new version number.\n2. Run `date +%Y-%m-%d` to get today's date.\n3. Run `git tag --sort=-version:refname` to list tags and find the previous version tag (the second one in the list, since the newest was just created).\n4. Run `git log <previous-tag>..HEAD --oneline` to get all commits since the previous release. Exclude commits that are just version bumps (e.g. '0.1.1') or CHANGELOG updates.\n5. Based on those commits, write a concise changelog entry. Group changes under ### Added, ### Changed, or ### Fixed as appropriate.\n6. Insert the new section into CHANGELOG.md after the `# Changelog` header and before the first existing `## [` entry.\n\nFormat:\n## [VERSION] - DATE\n\n### Changed\n- Actual change based on commits\n\nDo not modify any existing entries.",
+            "statusMessage": "Generating CHANGELOG entry from commits..."
+          }
+        ]
+      }
+    ]
+  }
+}

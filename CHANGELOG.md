@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4] - 2026-06-19
+
+### Added
+- Agent skill (`skills/dimgrid/`) following the agentskills.io specification, included in npm package
+
 ## [0.2.3] - 2026-06-18
 
 ### Added

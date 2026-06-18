@@ -23,7 +23,8 @@ Perform a version bump for this npm package:
       - ...
       ```
    d. Run `npm version <type> --no-git-tag-version` to bump `package.json` and `package-lock.json` without creating a git commit.
-   e. Stage all changed files: `git add CHANGELOG.md package.json package-lock.json`
+   d2. Update version in any agentskills.io skill metadata: for each file matching `skills/*/SKILL.md`, if it contains a `version:` line inside the `metadata:` block, update it to the new version string (quoted, e.g. `version: "0.2.4"`).
+   e. Stage all changed files: `git add CHANGELOG.md package.json package-lock.json` and any `skills/*/SKILL.md` files updated in d2.
    f. Commit: `git commit -m "<new-version>"`
    g. Create the tag: `git tag v<new-version>`
 6. Report the new version and tag. Do NOT run `git push`.

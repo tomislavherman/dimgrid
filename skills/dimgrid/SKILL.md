@@ -5,7 +5,7 @@ license: MIT
 compatibility: JavaScript or TypeScript projects using npm, yarn, or pnpm. Node.js 16+. ESM and CommonJS both supported. Browser-compatible (no Node.js APIs used).
 metadata:
   author: tomislavherman
-  version: "0.2.3"
+  version: "0.2.4"
 ---
 
 # dimgrid

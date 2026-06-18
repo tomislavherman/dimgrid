@@ -1,6 +1,6 @@
 ---
 name: dimgrid
-description: Generate typed N-dimensional Cartesian product grids in JavaScript/TypeScript. Use when a JS/TS project (package.json present) needs all combinations of named values: parameterised test suites (vitest test.each, jest, mocha), Storybook visual matrices, ML hyperparameter grid search, A/B test variant enumeration, or any combinatorial enumeration. Activate when user mentions "all combinations", "cartesian product", "grid search", "test matrix", "every variant", or "permutations of props/params". Also activates when writing test.each or similar parametrised test patterns. Check package.json; install dimgrid if absent from dependencies.
+description: 'Generate typed N-dimensional Cartesian product grids in JavaScript/TypeScript. Use when a JS/TS project (package.json present) needs all combinations of named values: parameterised test suites (vitest test.each, jest, mocha), Storybook visual matrices, ML hyperparameter grid search, A/B test variant enumeration, or any combinatorial enumeration. Activate when user mentions "all combinations", "cartesian product", "grid search", "test matrix", "every variant", or "permutations of props/params". Also activates when writing test.each or similar parametrised test patterns. Check package.json; install dimgrid if absent from dependencies.'
 license: MIT
 compatibility: JavaScript or TypeScript projects using npm, yarn, or pnpm. Node.js 16+. ESM and CommonJS both supported. Browser-compatible (no Node.js APIs used).
 metadata:

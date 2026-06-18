@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2026-06-18
+
+### Added
+- CI workflow (GitHub Actions) and CI/bundle size badges in README
+
 ## [0.2.0] - 2026-06-18
 
 ### Added

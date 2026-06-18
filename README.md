@@ -5,6 +5,8 @@
 [![Bundle size](https://img.shields.io/bundlephobia/minzip/dimgrid)](https://bundlephobia.com/package/dimgrid)
 [![Coverage](https://codecov.io/gh/tomislavherman/dimgrid/branch/main/graph/badge.svg)](https://codecov.io/gh/tomislavherman/dimgrid)
 
+[Changelog](https://github.com/tomislavherman/dimgrid/blob/main/CHANGELOG.md)
+
 Build a typed N-dimensional grid of objects by adding named dimensions with discrete values.
 
 Start from a single empty point and expand it into a full cartesian product by adding dimensions one at a time. Points are generated lazily — each `.dim()` call stores dimension metadata, and the cartesian product is only computed when you iterate or call `.toArray()`.

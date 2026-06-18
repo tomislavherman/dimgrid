@@ -34,6 +34,12 @@ describe('dimgrid', () => {
     expect(grid.size).toBe(8)
   })
 
+  it('returns cached size on repeated calls for static grids', () => {
+    const grid = dimgrid().dim('a', [1, 2, 3]).dim('b', ['x', 'y'])
+    expect(grid.size).toBe(6)
+    expect(grid.size).toBe(6)
+  })
+
   it('returns empty grid when a dimension has no values', () => {
     const grid = dimgrid().dim('x', []).dim('y', [1, 2])
     expect(grid.size).toBe(0)
@@ -78,6 +84,12 @@ describe('dimgrid', () => {
       const upfront = dimgrid().dim('a', [1, 2, 3]).dim('b', ['x', 'y'])
       expect(extended.size).toBe(upfront.size)
       expect(extended.toArray()).toEqual(upfront.toArray())
+    })
+
+    it('extends a static dimension with a dynamic resolver', () => {
+      const grid = dimgrid().dim('x', [1, 2]).dim('x', () => [3])
+      expect(grid.size).toBe(3)
+      expect(grid.toArray()).toEqual([{ x: 1 }, { x: 2 }, { x: 3 }])
     })
   })
 

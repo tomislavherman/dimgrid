@@ -4,7 +4,7 @@
 
 Build a typed N-dimensional grid of objects by adding named dimensions with discrete values.
 
-Start from a single empty point and expand it into a full cartesian product by adding dimensions one at a time. Each `.dim()` call multiplies every existing point by the number of values in the new dimension, attaching the dimension key to each resulting point.
+Start from a single empty point and expand it into a full cartesian product by adding dimensions one at a time. Points are generated lazily — each `.dim()` call stores dimension metadata, and the cartesian product is only computed when you iterate or call `.toArray()`.
 
 ## Install
 
@@ -74,7 +74,7 @@ Returns all points as a plain `T[]`.
 
 ### `grid.size`
 
-Number of points currently in the grid.
+Number of points in the grid. For grids with only static value arrays this is computed in O(dimensions) by multiplying dimension lengths — no iteration needed. For grids that use a function dimension, iteration is required and the cost is O(points).
 
 ### `grid[Symbol.iterator]`
 

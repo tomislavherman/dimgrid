@@ -50,6 +50,37 @@ describe('dimgrid', () => {
     expect(DimGrid.create().toArray()).toEqual(dimgrid().toArray())
   })
 
+  describe('extending an existing dimension', () => {
+    it('appends new values instead of multiplying', () => {
+      const grid = dimgrid().dim('a', [1, 2]).dim('a', [3])
+      expect(grid.size).toBe(3)
+      expect(grid.toArray()).toEqual([{ a: 1 }, { a: 2 }, { a: 3 }])
+    })
+
+    it('preserves other dimensions when extending', () => {
+      const grid = dimgrid()
+        .dim('color', ['red', 'green'])
+        .dim('size', ['S', 'M'])
+        .dim('color', ['blue'])
+      expect(grid.size).toBe(6)
+      expect(grid.toArray()).toEqual([
+        { color: 'red', size: 'S' },
+        { color: 'red', size: 'M' },
+        { color: 'green', size: 'S' },
+        { color: 'green', size: 'M' },
+        { color: 'blue', size: 'S' },
+        { color: 'blue', size: 'M' },
+      ])
+    })
+
+    it('is equivalent to declaring all values upfront', () => {
+      const extended = dimgrid().dim('a', [1, 2]).dim('b', ['x', 'y']).dim('a', [2, 3])
+      const upfront = dimgrid().dim('a', [1, 2, 3]).dim('b', ['x', 'y'])
+      expect(extended.size).toBe(upfront.size)
+      expect(extended.toArray()).toEqual(upfront.toArray())
+    })
+  })
+
   describe('add with function', () => {
     it('uses parent point to derive values', () => {
       const grid = dimgrid()

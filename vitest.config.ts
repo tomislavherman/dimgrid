@@ -5,5 +5,9 @@ export default defineConfig({
     typecheck: {
       enabled: true,
     },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+    },
   },
 })

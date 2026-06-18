@@ -1,6 +1,6 @@
 ---
 description: Bump the npm package version. Analyzes commits since last release to recommend patch/minor/major, asks for confirmation, writes CHANGELOG, bumps version, commits, and tags. Does not push.
-allowed-tools: Read Edit Bash
+allowed-tools: Read Edit Bash AskUserQuestion
 ---
 
 Perform a version bump for this npm package:
@@ -11,7 +11,7 @@ Perform a version bump for this npm package:
    - **major** — breaking changes (BREAKING CHANGE, `!` suffix on conventional commit type)
    - **minor** — new features or behaviour added (feat, add, new)
    - **patch** — everything else (fix, docs, refactor, chore, test)
-4. Present the recommendation to the user with a short explanation of what drove the choice, then ask them to confirm or override with patch / minor / major.
+4. Present the recommendation using AskUserQuestion with three options. Put the recommended type first with "(Recommended)" appended to its label. Short explanation of what drove the choice goes in the question text.
 5. Once confirmed, perform the following steps in order:
    a. Run `date +%Y-%m-%d` to get today's date.
    b. Read `package.json` to get the current version, compute the new version from the bump type.

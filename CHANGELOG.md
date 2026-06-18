@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2026-06-18
+
+### Added
+- Code coverage reporting via Codecov with coverage badge in README
+- Changelog link in README
+
+### Changed
+- CI no longer runs on tag pushes
+- Badge order updated (coverage before bundle size)
+
 ## [0.2.2] - 2026-06-18
 
 ### Changed

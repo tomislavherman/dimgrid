@@ -4,8 +4,7 @@
 [![CI](https://github.com/tomislavherman/dimgrid/actions/workflows/ci.yml/badge.svg)](https://github.com/tomislavherman/dimgrid/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/tomislavherman/dimgrid/branch/main/graph/badge.svg)](https://codecov.io/gh/tomislavherman/dimgrid)
 [![Bundle size](https://img.shields.io/bundlephobia/minzip/dimgrid)](https://bundlephobia.com/package/dimgrid)
-
-[Changelog](https://github.com/tomislavherman/dimgrid/blob/main/CHANGELOG.md)
+[![Agent Skill](https://img.shields.io/badge/agent%20skill-skills.sh-blueviolet)](https://skills.sh/tomislavherman/dimgrid/dimgrid)
 
 Build a typed N-dimensional grid of objects by adding named dimensions with discrete values.
 
@@ -210,6 +209,8 @@ console.log('best config:', best)
 The pruning matters at scale: a full 4-dimensional sweep without constraints wastes GPU hours on configurations that are guaranteed to fail. Adding a fifth dimension (say, `weightDecay`) multiplies the search space, but the function form keeps the invalid slice removed automatically.
 
 ---
+
+[Changelog](https://github.com/tomislavherman/dimgrid/blob/main/CHANGELOG.md)
 
 ## Credits
 

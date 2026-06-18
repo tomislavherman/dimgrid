@@ -1,6 +1,5 @@
 ---
 description: Bump the npm package version. Analyzes commits since last release to recommend patch/minor/major, asks for confirmation, writes CHANGELOG, bumps version, commits, and tags. Does not push.
-disable-model-invocation: true
 allowed-tools: Read Edit Bash
 ---
 

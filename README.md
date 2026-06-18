@@ -4,7 +4,7 @@
 [![CI](https://github.com/tomislavherman/dimgrid/actions/workflows/ci.yml/badge.svg)](https://github.com/tomislavherman/dimgrid/actions/workflows/ci.yml)
 [![Coverage](https://codecov.io/gh/tomislavherman/dimgrid/branch/main/graph/badge.svg)](https://codecov.io/gh/tomislavherman/dimgrid)
 [![Bundle size](https://img.shields.io/bundlephobia/minzip/dimgrid)](https://bundlephobia.com/package/dimgrid)
-[![Agent Skill](https://img.shields.io/badge/agent%20skill-skills.sh-blueviolet)](https://skills.sh/tomislavherman/dimgrid/dimgrid)
+[![skills.sh](https://skills.sh/b/tomislavherman/dimgrid)](https://skills.sh/tomislavherman/dimgrid)
 
 Build a typed N-dimensional grid of objects by adding named dimensions with discrete values.
 

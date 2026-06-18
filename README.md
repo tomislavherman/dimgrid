@@ -1,6 +1,8 @@
 # dimgrid
 
 [![npm version](https://img.shields.io/npm/v/dimgrid)](https://www.npmjs.com/package/dimgrid)
+[![CI](https://github.com/tomislavherman/dimgrid/actions/workflows/ci.yml/badge.svg)](https://github.com/tomislavherman/dimgrid/actions/workflows/ci.yml)
+[![Bundle size](https://img.shields.io/bundlephobia/minzip/dimgrid)](https://bundlephobia.com/package/dimgrid)
 
 Build a typed N-dimensional grid of objects by adding named dimensions with discrete values.
 

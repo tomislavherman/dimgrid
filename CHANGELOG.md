@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-06-18
+
+### Added
+- Lazy evaluation — grid items are computed on demand rather than eagerly
+- Extending an existing dimension multiple times now merges values instead of duplicating the dimension
+
 ## [0.1.1] - 2026-06-12
 
 ### Changed

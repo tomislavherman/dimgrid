@@ -1,6 +1,6 @@
 {
   "name": "dimgrid",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Build a typed N-dimensional grid of objects by adding named dimensions with discrete values",
   "keywords": [
     "grid",

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.5] - 2026-06-19
+
+### Fixed
+- YAML syntax error in `skills/dimgrid/SKILL.md` — description field now quoted to handle colons
+
 ## [0.2.4] - 2026-06-19
 
 ### Added

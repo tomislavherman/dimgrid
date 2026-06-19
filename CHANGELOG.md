@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.6] - 2026-06-19
+
+### Added
+- tessl CLI configuration (`tessl.json`, `.mcp.json`, `.vscode/mcp.json`, `skills/dimgrid/.tessl-plugin/plugin.json`)
+
 ## [0.2.5] - 2026-06-19
 
 ### Fixed

@@ -3,8 +3,18 @@ type KeysOfUnion<T> = T extends unknown ? keyof T : never
 // Deliberately non-homomorphic (the `in` source is not syntactically `keyof T`)
 // so a union of same-shape seed points collapses into one object type instead
 // of distributing: {mode:'fast'} | {mode:'slow'} → {mode:'fast' | 'slow'}.
-// Also strips the readonly that `const` inference adds.
-type Collapse<T> = { [K in keyof T & KeysOfUnion<T>]: T[K] }
+// Also strips the readonly that `const` inference adds. The `extends infer O`
+// indirection forces eager evaluation so call sites display the plain object
+// type (DimGrid<{ mode: 'fast' | 'slow' }>) instead of DimGrid<Collapse<...>>.
+type Collapse<T> = { [K in keyof T & KeysOfUnion<T>]: T[K] } extends infer O
+  ? { [K in keyof O]: O[K] }
+  : never
+
+// Carries a readable message into type errors at rejected seed call sites,
+// instead of the parameter reducing to an opaque `never`.
+interface InvalidSeed<Message extends string> {
+  'dimgrid invalid seed': Message
+}
 
 // Keys that are required (non-optional) on a single object type.
 type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T]
@@ -19,15 +29,19 @@ type EachHasAllKeys<T, All> = T extends unknown
   : never
 
 // `unknown` (a no-op in an intersection) when every union member has the same
-// required keys; `never` otherwise — rejects mixed-shape seed iterables at the
-// call site. Compares required keys (not `keyof`) because TypeScript pads
-// heterogeneous array literals with optional-undefined properties, which would
-// defeat a plain `keyof` comparison.
-type SameShape<T> = false extends EachHasAllKeys<T, AllRequiredKeys<T>> ? never : unknown
+// required keys; an InvalidSeed error otherwise — rejects mixed-shape seed
+// iterables at the call site. Compares required keys (not `keyof`) because
+// TypeScript pads heterogeneous array literals with optional-undefined
+// properties, which would defeat a plain `keyof` comparison.
+type SameShape<T> = false extends EachHasAllKeys<T, AllRequiredKeys<T>>
+  ? InvalidSeed<'all seed points must have the same keys'>
+  : unknown
 
 // Keeps arrays/grids (and mixed-shape arrays rejected by SameShape) from
 // falling through to the single-point overload.
-type NotIterable = { [Symbol.iterator]?: never }
+type NotIterable<T> = T extends Iterable<unknown>
+  ? InvalidSeed<'a single-point seed must not be iterable'>
+  : unknown
 
 type Dim = {
   key: string
@@ -100,7 +114,7 @@ export class DimGrid<T extends object = {}> {
     points: Iterable<T> & SameShape<T>,
   ): DimGrid<Collapse<T>>
   /** Creates a grid seeded with a single point. See the {@link dimgrid} single-point overload. */
-  static create<const T extends object>(point: T & NotIterable): DimGrid<Collapse<T>>
+  static create<const T extends object>(point: T & NotIterable<T>): DimGrid<Collapse<T>>
   static create(seed?: object): DimGrid<any> {
     if (seed === undefined) {
       const s = [{}]
@@ -281,7 +295,7 @@ export function dimgrid<const T extends object>(
  * @param point - The initial point. Must not be iterable (iterables are
  *   treated as collections of points).
  */
-export function dimgrid<const T extends object>(point: T & NotIterable): DimGrid<Collapse<T>>
+export function dimgrid<const T extends object>(point: T & NotIterable<T>): DimGrid<Collapse<T>>
 export function dimgrid(seed?: object): DimGrid<any> {
   return seed === undefined ? DimGrid.create() : DimGrid.create(seed as any)
 }

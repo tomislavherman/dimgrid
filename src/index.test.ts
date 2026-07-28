@@ -119,4 +119,38 @@ describe('dimgrid', () => {
       ])
     })
   })
+
+  describe('seeding with a single point', () => {
+    it('starts with the given point', () => {
+      const grid = dimgrid({ mode: 'fast' })
+      expect(grid.size).toBe(1)
+      expect(grid.toArray()).toEqual([{ mode: 'fast' }])
+    })
+
+    it('multiplies dimensions from the seed point', () => {
+      const grid = dimgrid({ mode: 'fast' }).dim('n', [1, 2])
+      expect(grid.size).toBe(2)
+      expect(grid.toArray()).toEqual([
+        { mode: 'fast', n: 1 },
+        { mode: 'fast', n: 2 },
+      ])
+    })
+
+    it('caches size for a point-seeded static grid', () => {
+      const grid = dimgrid({ a: 1 }).dim('b', ['x', 'y'])
+      expect(grid.size).toBe(2)
+      expect(grid.size).toBe(2)
+    })
+
+    it('yields a copy, not the original seed object', () => {
+      const point = { mode: 'fast' }
+      const grid = dimgrid(point)
+      expect(grid.toArray()[0]).toEqual(point)
+      expect(grid.toArray()[0]).not.toBe(point)
+    })
+
+    it('DimGrid.create(point) is equivalent to dimgrid(point)', () => {
+      expect(DimGrid.create({ a: 1 }).toArray()).toEqual(dimgrid({ a: 1 }).toArray())
+    })
+  })
 })

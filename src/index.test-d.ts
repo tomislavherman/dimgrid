@@ -37,3 +37,19 @@ describe('dim', () => {
       .toEqualTypeOf<Iterator<{ x: 1 | 2 }>>()
   })
 })
+
+describe('seeded factory', () => {
+  it('no-arg factory still infers the empty grid', () => {
+    expectTypeOf(dimgrid()).toEqualTypeOf<DimGrid<{}>>()
+  })
+
+  it('single point infers const (literal) types', () => {
+    expectTypeOf(dimgrid({ mode: 'fast', retries: 3 }))
+      .toEqualTypeOf<DimGrid<{ mode: 'fast'; retries: 3 }>>()
+  })
+
+  it('dimensions extend the seeded type', () => {
+    expectTypeOf(dimgrid({ mode: 'fast' }).dim('n', [1, 2]))
+      .toEqualTypeOf<DimGrid<{ mode: 'fast'; n: 1 | 2 }>>()
+  })
+})

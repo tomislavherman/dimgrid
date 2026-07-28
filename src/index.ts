@@ -1,3 +1,11 @@
+type KeysOfUnion<T> = T extends unknown ? keyof T : never
+
+// Deliberately non-homomorphic (the `in` source is not syntactically `keyof T`)
+// so a union of same-shape seed points collapses into one object type instead
+// of distributing: {mode:'fast'} | {mode:'slow'} → {mode:'fast' | 'slow'}.
+// Also strips the readonly that `const` inference adds.
+type Collapse<T> = { [K in keyof T & KeysOfUnion<T>]: T[K] }
+
 type Dim = {
   key: string
   // Non-null only for static dimensions — used for O(D) size computation.
@@ -40,15 +48,32 @@ function deduped(values: readonly unknown[]): unknown[] {
  */
 export class DimGrid<T extends object = {}> {
   private readonly _dims: readonly Dim[]
+  private readonly _seed: Iterable<Record<string, unknown>>
+  // Non-null when the seed is a fixed array of points (no-arg or single-point
+  // construction) — enables O(D) size computation.
+  private readonly _staticSeed: readonly Record<string, unknown>[] | null
   private _cachedSize: number | null = null
 
-  private constructor(dims: readonly Dim[]) {
+  private constructor(
+    dims: readonly Dim[],
+    seed: Iterable<Record<string, unknown>>,
+    staticSeed: readonly Record<string, unknown>[] | null,
+  ) {
     this._dims = dims
+    this._seed = seed
+    this._staticSeed = staticSeed
   }
 
   /** Creates an empty grid with no dimensions. Equivalent to calling {@link dimgrid}. */
-  static create(): DimGrid<{}> {
-    return new DimGrid<{}>([])
+  static create(): DimGrid<{}>
+  static create<const T extends object>(point: T): DimGrid<Collapse<T>>
+  static create(seed?: object): DimGrid<any> {
+    if (seed === undefined) {
+      const s = [{}]
+      return new DimGrid<{}>([], s, s)
+    }
+    const s = [seed as Record<string, unknown>]
+    return new DimGrid([], s, s)
   }
 
   /**
@@ -116,10 +141,14 @@ export class DimGrid<T extends object = {}> {
         }
       }
 
-      return new DimGrid(newDims) as any
+      return new DimGrid(newDims, this._seed, this._staticSeed) as any
     }
 
-    return new DimGrid([...this._dims, { key, staticValues, resolve: newResolve }]) as any
+    return new DimGrid(
+      [...this._dims, { key, staticValues, resolve: newResolve }],
+      this._seed,
+      this._staticSeed,
+    ) as any
   }
 
   /** Returns all points in the grid as an array. */
@@ -137,7 +166,14 @@ export class DimGrid<T extends object = {}> {
   get size(): number {
     if (this._cachedSize !== null) return this._cachedSize
 
-    let product = 1
+    if (this._staticSeed === null) {
+      // Lazy iterable seed — contents may change between iterations, no caching.
+      let count = 0
+      for (const _ of this) count++
+      return count
+    }
+
+    let product = this._staticSeed.length
     for (const dim of this._dims) {
       if (dim.staticValues === null) {
         // Dynamic dimension — don't cache, external state may change between calls.
@@ -151,11 +187,15 @@ export class DimGrid<T extends object = {}> {
   }
 
   *[Symbol.iterator](): Iterator<T> {
-    yield* generate(this._dims, 0, {}) as Generator<T>
+    for (const seedPoint of this._seed) {
+      yield* generate(this._dims, 0, { ...seedPoint }) as Generator<T>
+    }
   }
 }
 
 /** Creates an empty {@link DimGrid}. Chain {@link DimGrid.dim} calls to add dimensions. */
-export function dimgrid(): DimGrid<{}> {
-  return DimGrid.create()
+export function dimgrid(): DimGrid<{}>
+export function dimgrid<const T extends object>(point: T): DimGrid<Collapse<T>>
+export function dimgrid(seed?: object): DimGrid<any> {
+  return seed === undefined ? DimGrid.create() : DimGrid.create(seed as any)
 }

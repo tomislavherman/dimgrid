@@ -153,4 +153,72 @@ describe('dimgrid', () => {
       expect(DimGrid.create({ a: 1 }).toArray()).toEqual(dimgrid({ a: 1 }).toArray())
     })
   })
+
+  describe('seeding with an iterable', () => {
+    it('starts with the given points', () => {
+      const grid = dimgrid([{ a: 1 }, { a: 2 }])
+      expect(grid.size).toBe(2)
+      expect(grid.toArray()).toEqual([{ a: 1 }, { a: 2 }])
+    })
+
+    it('multiplies dimensions from each seed point', () => {
+      const grid = dimgrid([{ a: 1 }, { a: 2 }]).dim('b', ['x', 'y'])
+      expect(grid.toArray()).toEqual([
+        { a: 1, b: 'x' },
+        { a: 1, b: 'y' },
+        { a: 2, b: 'x' },
+        { a: 2, b: 'y' },
+      ])
+    })
+
+    it('yields nothing for an empty seed', () => {
+      const grid = dimgrid([] as { a: number }[]).dim('b', [1, 2])
+      expect(grid.size).toBe(0)
+      expect(grid.toArray()).toEqual([])
+    })
+
+    it('does not dedupe duplicate seed points', () => {
+      const grid = dimgrid([{ a: 1 }, { a: 1 }])
+      expect(grid.toArray()).toEqual([{ a: 1 }, { a: 1 }])
+    })
+
+    it('seeds from another grid', () => {
+      const inner = dimgrid().dim('a', [1, 2])
+      const grid = dimgrid(inner).dim('b', ['x'])
+      expect(grid.toArray()).toEqual([
+        { a: 1, b: 'x' },
+        { a: 2, b: 'x' },
+      ])
+    })
+
+    it("re-resolves a seeding grid's dynamic dimensions on each iteration", () => {
+      let limit = 1
+      const inner = dimgrid().dim('n', () => (limit === 1 ? [1] : [1, 2]))
+      const outer = dimgrid(inner).dim('m', ['x'])
+      expect(outer.toArray()).toEqual([{ n: 1, m: 'x' }])
+      limit = 2
+      expect(outer.toArray()).toEqual([
+        { n: 1, m: 'x' },
+        { n: 2, m: 'x' },
+      ])
+    })
+
+    it('recomputes size on every call for iterable seeds', () => {
+      const points = [{ a: 1 }]
+      const grid = dimgrid(points)
+      expect(grid.size).toBe(1)
+      points.push({ a: 2 })
+      expect(grid.size).toBe(2)
+    })
+
+    it('a one-shot generator seed is exhausted after the first iteration', () => {
+      function* points() {
+        yield { a: 1 }
+        yield { a: 2 }
+      }
+      const grid = dimgrid(points())
+      expect(grid.toArray()).toEqual([{ a: 1 }, { a: 2 }])
+      expect(grid.toArray()).toEqual([])
+    })
+  })
 })

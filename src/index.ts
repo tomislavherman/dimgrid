@@ -6,6 +6,29 @@ type KeysOfUnion<T> = T extends unknown ? keyof T : never
 // Also strips the readonly that `const` inference adds.
 type Collapse<T> = { [K in keyof T & KeysOfUnion<T>]: T[K] }
 
+// Keys that are required (non-optional) on a single object type.
+type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T]
+
+// Union of required keys across all union members.
+type AllRequiredKeys<T> = T extends unknown ? RequiredKeys<T> : never
+
+// Distributes over T; `All` is precomputed so each member is compared against
+// the union-wide key set rather than its own.
+type EachHasAllKeys<T, All> = T extends unknown
+  ? [All] extends [RequiredKeys<T>] ? true : false
+  : never
+
+// `unknown` (a no-op in an intersection) when every union member has the same
+// required keys; `never` otherwise — rejects mixed-shape seed iterables at the
+// call site. Compares required keys (not `keyof`) because TypeScript pads
+// heterogeneous array literals with optional-undefined properties, which would
+// defeat a plain `keyof` comparison.
+type SameShape<T> = false extends EachHasAllKeys<T, AllRequiredKeys<T>> ? never : unknown
+
+// Keeps arrays/grids (and mixed-shape arrays rejected by SameShape) from
+// falling through to the single-point overload.
+type NotIterable = { [Symbol.iterator]?: never }
+
 type Dim = {
   key: string
   // Non-null only for static dimensions — used for O(D) size computation.
@@ -66,11 +89,17 @@ export class DimGrid<T extends object = {}> {
 
   /** Creates an empty grid with no dimensions. Equivalent to calling {@link dimgrid}. */
   static create(): DimGrid<{}>
-  static create<const T extends object>(point: T): DimGrid<Collapse<T>>
+  static create<const T extends object>(
+    points: Iterable<T> & SameShape<T>,
+  ): DimGrid<Collapse<T>>
+  static create<const T extends object>(point: T & NotIterable): DimGrid<Collapse<T>>
   static create(seed?: object): DimGrid<any> {
     if (seed === undefined) {
       const s = [{}]
       return new DimGrid<{}>([], s, s)
+    }
+    if (Symbol.iterator in seed) {
+      return new DimGrid([], seed as Iterable<Record<string, unknown>>, null)
     }
     const s = [seed as Record<string, unknown>]
     return new DimGrid([], s, s)
@@ -195,7 +224,10 @@ export class DimGrid<T extends object = {}> {
 
 /** Creates an empty {@link DimGrid}. Chain {@link DimGrid.dim} calls to add dimensions. */
 export function dimgrid(): DimGrid<{}>
-export function dimgrid<const T extends object>(point: T): DimGrid<Collapse<T>>
+export function dimgrid<const T extends object>(
+  points: Iterable<T> & SameShape<T>,
+): DimGrid<Collapse<T>>
+export function dimgrid<const T extends object>(point: T & NotIterable): DimGrid<Collapse<T>>
 export function dimgrid(seed?: object): DimGrid<any> {
   return seed === undefined ? DimGrid.create() : DimGrid.create(seed as any)
 }

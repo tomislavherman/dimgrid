@@ -52,4 +52,19 @@ describe('seeded factory', () => {
     expectTypeOf(dimgrid({ mode: 'fast' }).dim('n', [1, 2]))
       .toEqualTypeOf<DimGrid<{ mode: 'fast'; n: 1 | 2 }>>()
   })
+
+  it('array seed collapses same-shape points to a single object type', () => {
+    expectTypeOf(dimgrid([{ mode: 'fast' }, { mode: 'slow' }]))
+      .toEqualTypeOf<DimGrid<{ mode: 'fast' | 'slow' }>>()
+  })
+
+  it('rejects mixed-shape seed points', () => {
+    // @ts-expect-error — seed points must all have the same keys
+    dimgrid([{ a: 1 }, { b: 2 }])
+  })
+
+  it('preserves T when seeding from another grid', () => {
+    const inner = dimgrid().dim('a', [1, 2])
+    expectTypeOf(dimgrid(inner)).toEqualTypeOf<DimGrid<{ a: 1 | 2 }>>()
+  })
 })

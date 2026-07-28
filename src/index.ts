@@ -95,9 +95,11 @@ export class DimGrid<T extends object = {}> {
 
   /** Creates an empty grid with no dimensions. Equivalent to calling {@link dimgrid}. */
   static create(): DimGrid<{}>
+  /** Creates a grid seeded with the given points. See the {@link dimgrid} iterable overload. */
   static create<const T extends object>(
     points: Iterable<T> & SameShape<T>,
   ): DimGrid<Collapse<T>>
+  /** Creates a grid seeded with a single point. See the {@link dimgrid} single-point overload. */
   static create<const T extends object>(point: T & NotIterable): DimGrid<Collapse<T>>
   static create(seed?: object): DimGrid<any> {
     if (seed === undefined) {
@@ -241,9 +243,44 @@ export class DimGrid<T extends object = {}> {
 
 /** Creates an empty {@link DimGrid}. Chain {@link DimGrid.dim} calls to add dimensions. */
 export function dimgrid(): DimGrid<{}>
+/**
+ * Creates a {@link DimGrid} seeded with the given points.
+ *
+ * The iterable is re-iterated lazily on every grid iteration, so seeding from
+ * another grid keeps its dynamic dimensions live:
+ * ```ts
+ * const inner = dimgrid().dim('a', [1, 2])
+ * dimgrid(inner).dim('b', ['x', 'y']) // 4 points, types preserved
+ * ```
+ * One-shot iterables (e.g. generator objects) are exhausted after the first
+ * iteration — spread them into an array first if the grid is iterated more
+ * than once. Seed points are not deduplicated.
+ *
+ * All points must have the same keys; mixed shapes are a compile error.
+ * Literal types are preserved: `dimgrid([{ mode: 'fast' }, { mode: 'slow' }])`
+ * infers `DimGrid<{ mode: 'fast' | 'slow' }>`.
+ *
+ * If a later {@link DimGrid.dim} call reuses a key present on the seed points,
+ * each point's own value is unioned with the dimension's values (deduplicated):
+ * ```ts
+ * dimgrid({ mode: 'fast' }).dim('mode', ['slow']) // { mode: 'fast' }, { mode: 'slow' }
+ * ```
+ *
+ * @param points - An iterable of same-shaped point objects. Any object
+ *   implementing `Symbol.iterator` is treated as a collection of points.
+ */
 export function dimgrid<const T extends object>(
   points: Iterable<T> & SameShape<T>,
 ): DimGrid<Collapse<T>>
+/**
+ * Creates a {@link DimGrid} seeded with a single point — a starting set with
+ * one element. Literal types are preserved: `dimgrid({ mode: 'fast' })` infers
+ * `DimGrid<{ mode: 'fast' }>`. See the iterable overload for how later
+ * {@link DimGrid.dim} calls interact with seed keys.
+ *
+ * @param point - The initial point. Must not be iterable (iterables are
+ *   treated as collections of points).
+ */
 export function dimgrid<const T extends object>(point: T & NotIterable): DimGrid<Collapse<T>>
 export function dimgrid(seed?: object): DimGrid<any> {
   return seed === undefined ? DimGrid.create() : DimGrid.create(seed as any)

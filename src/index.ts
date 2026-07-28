@@ -47,7 +47,13 @@ function* generate(
     return
   }
   const dim = dims[index]
-  for (const value of dim.resolve(point)) {
+  const resolved = dim.resolve(point)
+  // A point can only carry this key already if it came from a seed (dimension
+  // keys are unique) — union the point's own value with the dimension's values.
+  const values = Object.prototype.hasOwnProperty.call(point, dim.key)
+    ? deduped([point[dim.key], ...resolved])
+    : resolved
+  for (const value of values) {
     yield* generate(dims, index + 1, { ...point, [dim.key]: value })
   }
 }
@@ -211,6 +217,17 @@ export class DimGrid<T extends object = {}> {
         return count
       }
       product *= dim.staticValues.length
+    }
+
+    const collides = this._staticSeed.some(p =>
+      this._dims.some(d => Object.prototype.hasOwnProperty.call(p, d.key)),
+    )
+    if (collides) {
+      // Seed/dimension key overlap — per-point unions break the product
+      // formula. Everything is still static, so count once and cache.
+      let count = 0
+      for (const _ of this) count++
+      return (this._cachedSize = count)
     }
     return (this._cachedSize = product)
   }

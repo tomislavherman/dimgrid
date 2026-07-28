@@ -221,4 +221,42 @@ describe('dimgrid', () => {
       expect(grid.toArray()).toEqual([])
     })
   })
+
+  describe('seed key collisions', () => {
+    it('unions the seed value with dimension values', () => {
+      const grid = dimgrid({ mode: 'fast' }).dim('mode', ['slow'])
+      expect(grid.toArray()).toEqual([{ mode: 'fast' }, { mode: 'slow' }])
+    })
+
+    it('dedupes when dimension values repeat the seed value', () => {
+      const grid = dimgrid({ mode: 'fast' }).dim('mode', ['fast', 'slow'])
+      expect(grid.toArray()).toEqual([{ mode: 'fast' }, { mode: 'slow' }])
+    })
+
+    it('unions per point, not across the seed set', () => {
+      const grid = dimgrid([{ mode: 'fast' }, { mode: 'slow' }]).dim('mode', ['slow'])
+      expect(grid.toArray()).toEqual([{ mode: 'fast' }, { mode: 'slow' }, { mode: 'slow' }])
+    })
+
+    it('unions after extending the colliding dimension', () => {
+      const grid = dimgrid({ mode: 'a' }).dim('mode', ['b']).dim('mode', ['c'])
+      expect(grid.toArray()).toEqual([{ mode: 'a' }, { mode: 'b' }, { mode: 'c' }])
+    })
+
+    it('size reflects the per-point union and is cached for static seeds', () => {
+      const grid = dimgrid({ mode: 'fast' }).dim('mode', ['fast', 'slow'])
+      expect(grid.size).toBe(2)
+      expect(grid.size).toBe(2)
+    })
+
+    it('collision does not disturb sibling dimensions', () => {
+      const grid = dimgrid({ mode: 'fast' }).dim('mode', ['slow']).dim('n', [1, 2])
+      expect(grid.toArray()).toEqual([
+        { mode: 'fast', n: 1 },
+        { mode: 'fast', n: 2 },
+        { mode: 'slow', n: 1 },
+        { mode: 'slow', n: 2 },
+      ])
+    })
+  })
 })

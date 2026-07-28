@@ -67,4 +67,9 @@ describe('seeded factory', () => {
     const inner = dimgrid().dim('a', [1, 2])
     expectTypeOf(dimgrid(inner)).toEqualTypeOf<DimGrid<{ a: 1 | 2 }>>()
   })
+
+  it('dim on a seed key unions the value types', () => {
+    expectTypeOf(dimgrid({ mode: 'fast' }).dim('mode', ['slow']))
+      .toEqualTypeOf<DimGrid<{ mode: 'fast' | 'slow' }>>()
+  })
 })

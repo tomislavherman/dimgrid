@@ -10,12 +10,6 @@ type Collapse<T> = { [K in keyof T & KeysOfUnion<T>]: T[K] } extends infer O
   ? { [K in keyof O]: O[K] }
   : never
 
-// Carries a readable message into type errors at rejected seed call sites,
-// instead of the parameter reducing to an opaque `never`.
-interface InvalidSeed<Message extends string> {
-  'dimgrid invalid seed': Message
-}
-
 // Keys that are required (non-optional) on a single object type.
 type RequiredKeys<T> = { [K in keyof T]-?: {} extends Pick<T, K> ? never : K }[keyof T]
 
@@ -29,23 +23,21 @@ type EachHasAllKeys<T, All> = T extends unknown
   : never
 
 // `unknown` (a no-op in an intersection) when every union member has the same
-// required keys; an InvalidSeed error otherwise — rejects mixed-shape seed
-// iterables at the call site. Compares required keys (not `keyof`) because
-// TypeScript pads heterogeneous array literals with optional-undefined
-// properties, which would defeat a plain `keyof` comparison.
-type SameShape<T> = false extends EachHasAllKeys<T, AllRequiredKeys<T>>
-  ? InvalidSeed<'all seed points must have the same keys'>
-  : unknown
+// required keys; `never` otherwise — rejects mixed-shape seed iterables at the
+// call site. Compares required keys (not `keyof`) because TypeScript pads
+// heterogeneous array literals with optional-undefined properties, which would
+// defeat a plain `keyof` comparison.
+type SameShape<T> = false extends EachHasAllKeys<T, AllRequiredKeys<T>> ? never : unknown
 
 // Validates a seed argument in a single signature: iterables must contain
 // same-shaped object points; anything else is a single point and always valid.
 // Intersected with `T` in the parameter so inference still flows through `T`,
-// while invalid seeds fail assignability with a readable InvalidSeed message.
+// while invalid seeds reduce the parameter to `never` and fail assignability.
 // `[E] extends [object]` avoids distributing over the element union.
 type ValidSeed<T> = T extends Iterable<infer E>
   ? [E] extends [object]
     ? SameShape<E>
-    : InvalidSeed<'seed points must be objects'>
+    : never
   : unknown
 
 // The point type a seed produces: element type for iterables, the object

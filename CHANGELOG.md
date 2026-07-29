@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2026-07-29
+
+### Added
+- Factory seed variants: `dimgrid(point)` seeds the grid with a single starting point, `dimgrid(points)` with any iterable of same-shaped points (arrays, generators, other grids) — literal types preserved, mixed shapes rejected at compile time
+- `DimGrid.create(seed?)` mirrors the factory overloads
+- Grid composition: a `DimGrid` can seed another grid; the seed is re-iterated lazily so dynamic dimensions of the seeding grid stay live
+- Seed-key collision semantics: a `.dim()` call reusing a key present on seed points unions each point's own value with the dimension's values (deduped) instead of overwriting
+- JSDoc on all public API symbols
+
+### Changed
+- Seed type errors are concise: one unified seed signature (no overload enumeration), invalid seeds reject with a plain `never` parameter
+- Inferred grid types display as plain object types (`DimGrid<{ a: 1 | 2 }>`) with no leaked utility aliases
+
 ## [0.2.6] - 2026-06-19
 
 ### Added

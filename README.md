@@ -8,7 +8,7 @@
 
 Build a typed N-dimensional grid of objects by adding named dimensions with discrete values.
 
-Start from a single empty point and expand it into a full cartesian product by adding dimensions one at a time. Points are generated lazily — each `.dim()` call stores dimension metadata, and the cartesian product is only computed when you iterate or call `.toArray()`.
+Start from a single empty point — or seed the grid with your own starting points — and expand into a full cartesian product by adding dimensions one at a time. Points are generated lazily — each `.dim()` call stores dimension metadata, and the cartesian product is only computed when you iterate or call `.toArray()`.
 
 ## Install
 
@@ -56,11 +56,55 @@ const points = dimgrid()
 // ]
 ```
 
+## Seeding the grid
+
+`dimgrid()` starts from a single empty point. Pass an object to start from that point instead, or an iterable of same-shaped objects to start from several:
+
+```typescript
+dimgrid({ mode: 'fast' }).dim('retries', [0, 1]).toArray()
+// [{ mode: 'fast', retries: 0 }, { mode: 'fast', retries: 1 }]
+
+dimgrid([{ preset: 'a' }, { preset: 'b' }]).dim('n', [1, 2]).toArray()
+// [
+//   { preset: 'a', n: 1 },
+//   { preset: 'a', n: 2 },
+//   { preset: 'b', n: 1 },
+//   { preset: 'b', n: 2 },
+// ]
+```
+
+Literal types are preserved: `dimgrid([{ mode: 'fast' }, { mode: 'slow' }])` is a `DimGrid<{ mode: 'fast' | 'slow' }>`. Seeding with points of different shapes is a compile error.
+
+Since a `DimGrid` is itself iterable, one grid can seed another:
+
+```typescript
+const base = dimgrid().dim('color', ['red', 'green'])
+const grid = dimgrid(base).dim('size', ['S', 'M'])
+// same 4 points as one chain, but base can come from elsewhere
+```
+
+The seed is re-iterated lazily on every iteration of the grid, so a seeding grid's function dimensions stay live. One-shot iterables (e.g. generator objects) are exhausted after the first iteration — spread them into an array first if you iterate more than once.
+
+If a later `.dim()` reuses a key that already exists on the seed points, each point's own value is unioned with the dimension's values (deduped) instead of being overwritten:
+
+```typescript
+dimgrid({ mode: 'fast' }).dim('mode', ['slow']).toArray()
+// [{ mode: 'fast' }, { mode: 'slow' }]
+```
+
 ## API
 
-### `dimgrid()`
+### `dimgrid(seed?)`
 
-Creates a new grid with a single empty point. All grids start here.
+Creates a new grid.
+
+| Argument | Starting set |
+|----------|--------------|
+| _none_ | A single empty point `{}` |
+| `point` — a non-iterable object | That single point |
+| `points` — an iterable of same-shaped objects | One point per element |
+
+Any object implementing `Symbol.iterator` (arrays, generators, other grids) is treated as a collection of points. `DimGrid.create(seed?)` is the equivalent static method.
 
 ### `grid.dim(key, values)`
 
@@ -78,7 +122,7 @@ Returns all points as a plain `T[]`.
 
 ### `grid.size`
 
-Number of points in the grid. For grids with only static value arrays this is computed in O(dimensions) by multiplying dimension lengths — no iteration needed. For grids that use a function dimension, iteration is required and the cost is O(points).
+Number of points in the grid. For grids with only static value arrays this is computed in O(dimensions) by multiplying dimension lengths — no iteration needed. For grids that use a function dimension or an iterable seed, iteration is required and the cost is O(points).
 
 ### `grid[Symbol.iterator]`
 

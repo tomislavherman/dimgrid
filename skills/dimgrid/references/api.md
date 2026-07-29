@@ -2,13 +2,33 @@
 
 Full type signatures, behaviour details, and edge cases.
 
-## `dimgrid()`
+## `dimgrid(seed?)`
 
 ```typescript
 function dimgrid(): DimGrid<{}>
+function dimgrid<const T extends object>(seed: T | Iterable<T>): DimGrid<...>
 ```
 
-Creates a new grid with a single empty point (`{}`). All chains start here.
+Creates a new grid. All chains start here.
+
+- **No argument** — a single empty point (`{}`).
+- **A non-iterable object** — a starting set with that one point. Literal types are preserved via `const` inference: `dimgrid({ mode: 'fast' })` is `DimGrid<{ mode: 'fast' }>`.
+- **An iterable of points** — a starting set with one point per element. Any object implementing `Symbol.iterator` counts: arrays, generator objects, other `DimGrid`s. All points must have the same keys — mixed shapes are a compile error. Same-shape literals collapse into one object type: `dimgrid([{ mode: 'fast' }, { mode: 'slow' }])` is `DimGrid<{ mode: 'fast' | 'slow' }>`.
+
+`DimGrid.create(seed?)` is the equivalent static method.
+
+**Seed semantics:**
+
+- The seed iterable is stored by reference and **re-iterated lazily on every grid iteration**. Seeding from another grid keeps that grid's dynamic dimensions live — external state changes are reflected on the next iteration.
+- One-shot iterables (generator objects) are exhausted after the first iteration; spread them into an array first if the grid is iterated more than once.
+- Seed points are **not** deduplicated — duplicates yield duplicate outputs.
+- Each yielded point is a copy; the original seed objects are never mutated or yielded.
+- If a later `.dim(key, ...)` reuses a key present on the seed points, each point's own value is unioned with the dimension's values (deduped) per point, not overwritten:
+
+```typescript
+dimgrid({ mode: 'fast' }).dim('mode', ['slow']).toArray()
+// [{ mode: 'fast' }, { mode: 'slow' }]
+```
 
 ## `DimGrid<T>`
 
@@ -73,8 +93,9 @@ get size(): number
 
 Returns the total number of points.
 
-- **Static grids** (all dimensions use arrays): O(D) — multiplies dimension lengths, no iteration required. Result is cached after the first access.
-- **Dynamic grids** (any dimension uses a function): O(N) — iterates all points and counts. Not cached, since resolvers may depend on external state.
+- **Static grids** (all dimensions use arrays; seed is empty or a single point): O(D) — multiplies dimension lengths, no iteration required. Result is cached after the first access.
+- **Dynamic grids** (any dimension uses a function, or the grid was seeded with an iterable): O(N) — iterates all points and counts. Not cached, since resolvers and iterable seeds may change between calls.
+- **Seed-key collisions** (a `.dim()` key also exists on a static seed point): O(N) — the per-point union breaks the product formula, but the result is still cached since everything is static.
 
 ### `[Symbol.iterator]`
 
@@ -149,5 +170,5 @@ import { dimgrid, DimGrid } from 'dimgrid'
 
 | Export | Kind | Description |
 |--------|------|-------------|
-| `dimgrid` | function | Factory — creates an empty `DimGrid<{}>` |
-| `DimGrid` | class | The grid class — useful for type annotations |
+| `dimgrid` | function | Factory — creates an empty or seeded `DimGrid` |
+| `DimGrid` | class | The grid class — useful for type annotations; `DimGrid.create(seed?)` mirrors the factory |

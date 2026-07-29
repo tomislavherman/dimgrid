@@ -64,13 +64,15 @@ TypeScript infers the full union type of each property from the chain — no typ
 | Member | Returns | Notes |
 |--------|---------|-------|
 | `dimgrid()` | `DimGrid<{}>` | Creates a grid with one empty point |
+| `dimgrid(point)` | `DimGrid<T>` | Seeds the grid with one starting point (non-iterable object) |
+| `dimgrid(points)` | `DimGrid<T>` | Seeds with an iterable of same-shaped points — arrays, generators, or another grid |
 | `.dim(key, values[])` | `DimGrid<T & {key: V}>` | Static values — expands every point |
 | `.dim(key, fn)` | `DimGrid<...>` | Dynamic values derived from the point so far |
 | `.toArray()` | `T[]` | Materialises all points |
-| `.size` | `number` | Point count; O(D) for static grids, O(N) for dynamic |
+| `.size` | `number` | Point count; O(D) for static grids, O(N) for dynamic dims or iterable seeds |
 | `[Symbol.iterator]` | `Iterator<T>` | Iterable — `for...of` and spread work |
 
-Calling `.dim()` with an existing key **merges** values into that dimension (deduped) rather than adding a new one.
+Calling `.dim()` with an existing key **merges** values into that dimension (deduped) rather than adding a new one. If the key exists on the *seed points*, each point's own value is unioned with the dimension's values per point.
 
 See [references/api.md](references/api.md) for full signatures and merge/dedup rules.
 
@@ -145,6 +147,18 @@ const cases = dimgrid()
 // viewer gets only 'read'; admin and editor get all three
 ```
 
+### Seeding and composing grids
+
+Pass a starting point (or an iterable of same-shaped points) to the factory instead of starting empty. Since a `DimGrid` is iterable, one grid can seed another:
+
+```typescript
+const base = dimgrid({ env: 'prod' })            // one starting point
+const grid = dimgrid(base).dim('region', ['eu', 'us'])  // seed from another grid
+// [{ env: 'prod', region: 'eu' }, { env: 'prod', region: 'us' }]
+```
+
+Literal types are preserved: `dimgrid([{ mode: 'fast' }, { mode: 'slow' }])` is `DimGrid<{ mode: 'fast' | 'slow' }>`. Mixed-shape seed points are a compile error.
+
 ### Lazy iteration (no full array in memory)
 
 ```typescript
@@ -158,7 +172,9 @@ const points = [...grid]  // spread also works
 ## Gotchas
 
 - **Duplicate keys merge, not append.** Calling `.dim('color', ['blue'])` after `.dim('color', ['red'])` produces one dimension with `['red', 'blue']` (deduped), not two passes. Use different keys to keep dimensions separate.
-- **`.size` triggers full iteration on dynamic grids.** If any dimension uses a function, `.size` iterates all points. Cache the result if you call it repeatedly.
+- **`.size` triggers full iteration on dynamic grids.** If any dimension uses a function — or the grid was seeded with an iterable — `.size` iterates all points. Cache the result if you call it repeatedly.
+- **Iterable seeds are re-iterated lazily.** Seeding from another grid keeps its function dimensions live, but a one-shot iterable (generator object) is exhausted after the first iteration — spread it into an array first.
+- **Seed keys reused by `.dim()` union per point.** `dimgrid({ mode: 'fast' }).dim('mode', ['slow'])` yields both `{ mode: 'fast' }` and `{ mode: 'slow' }` — the seed value is not overwritten.
 - **Values are deduped by `JSON.stringify`.** Primitives and plain objects work as expected. Class instances with the same JSON representation are treated as duplicates.
 - **Synchronous only.** Resolver functions must be synchronous. Resolve async data outside dimgrid and pass the resolved values in.
 - **Order is row-major.** The first dimension added varies slowest; the last varies fastest.
